@@ -110,7 +110,8 @@ func (r *ReconcileMemcached) Reconcile(request reconcile.Request) (reconcile.Res
 
 	// Check if the Deployment already exists, if not create a new one
 	deployment := &appsv1.Deployment{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: memcached.Name, Namespace: memcached.Namespace}, deployment)
+	//
+	err = r.client.Get(context.TODO(), types.NamespacedName{Name: memcached.Name, Namespace: "memcached-operator"}, deployment)
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new Deployment
 		dep := r.deploymentForMemcached(memcached)
@@ -143,7 +144,7 @@ func (r *ReconcileMemcached) Reconcile(request reconcile.Request) (reconcile.Res
 	// Check if the Service already exists, if not create a new one
 	// NOTE: The Service is used to expose the Deployment. However, the Service is not required at all for the memcached example to work. The purpose is to add more examples of what you can do in your operator project.
 	service := &corev1.Service{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: memcached.Name, Namespace: memcached.Namespace}, service)
+	err = r.client.Get(context.TODO(), types.NamespacedName{Name: memcached.Name, Namespace: "memcached-operator"}, service)
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new Service object
 		ser := r.serviceForMemcached(memcached)
@@ -162,12 +163,12 @@ func (r *ReconcileMemcached) Reconcile(request reconcile.Request) (reconcile.Res
 	// List the pods for this memcached's deployment
 	podList := &corev1.PodList{}
 	listOpts := []client.ListOption{
-		client.InNamespace(memcached.Namespace),
+		client.InNamespace("memcached-operator"),
 		client.MatchingLabels(labelsForMemcached(memcached.Name)),
 	}
 	err = r.client.List(context.TODO(), podList, listOpts...)
 	if err != nil {
-		reqLogger.Error(err, "Failed to list pods.", "Memcached.Namespace", memcached.Namespace, "Memcached.Name", memcached.Name)
+		reqLogger.Error(err, "Failed to list pods.", "Memcached.Namespace", "memcached-operator", "Memcached.Name", memcached.Name)
 		return reconcile.Result{}, err
 	}
 	podNames := getPodNames(podList.Items)
@@ -193,7 +194,7 @@ func (r *ReconcileMemcached) deploymentForMemcached(m *cachev1alpha1.Memcached) 
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name,
-			Namespace: m.Namespace,
+			Namespace: "memcached-operator",
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &replicas,
@@ -229,7 +230,7 @@ func (r *ReconcileMemcached) serviceForMemcached(m *cachev1alpha1.Memcached) *co
 	ser := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name,
-			Namespace: m.Namespace,
+			Namespace: "memcached-operator",
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: ls,

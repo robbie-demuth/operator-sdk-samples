@@ -28,7 +28,7 @@ func TestMemcachedController(t *testing.T) {
 
 	var (
 		name            = "memcached-operator"
-		namespace       = "memcached"
+		namespace       = "memcached-operator"
 		replicas  int32 = 3
 	)
 
@@ -36,7 +36,6 @@ func TestMemcachedController(t *testing.T) {
 	memcached := &cachev1alpha1.Memcached{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
-			Namespace: namespace,
 		},
 		Spec: cachev1alpha1.MemcachedSpec{
 			Size: replicas, // Set desired number of Memcached replicas.
@@ -60,7 +59,6 @@ func TestMemcachedController(t *testing.T) {
 	req := reconcile.Request{
 		NamespacedName: types.NamespacedName{
 			Name:      name,
-			Namespace: namespace,
 		},
 	}
 	res, err := r.Reconcile(req)
